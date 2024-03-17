@@ -204,6 +204,8 @@
     "view_in_ohif": "Подивитися в OHIF",
     "view_in_ohif_vr": "Подивитися в OHIF у режимі Volume Rendering",
     "view_in_ohif_tmtv": "Подивитися в OHIF у режимі Total Metabolic Tumor Volume",
+    "view_in_ohif_seg": "Подивитися в OHIF у режимі Segmentation",
+    "view_in_ohif_microscopy": "Подивитися в OHIF у режимі Microscopy",
     "view_in_osimis": "Подивитись у OsimisViewer",
     "view_in_stone": "Подивитись у StoneViewer",
     "view_in_volview": "Подивитись у VolView",
