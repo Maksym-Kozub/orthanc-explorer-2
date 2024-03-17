@@ -54,9 +54,9 @@ jobs:
     - run: npm run build
       working-directory: WebApplication
 
-    - name: upload web-app-dist to orthanc.osimis.io
+    - name: upload web-app-dist to s3
       working-directory: WebApplication
-      run: zip -r ${{needs.pre-build.outputs.current_branch_tag}}.zip dist/ && aws s3 --region eu-west-1 cp ${{needs.pre-build.outputs.current_branch_tag}}.zip s3://orthanc.osimis.io/public/oe2/web-app-dist/ --cache-control max-age=1
+      run: zip -r ${{needs.pre-build.outputs.current_branch_tag}}.zip dist/ && aws s3 --region eu-west-1 cp ${{needs.pre-build.outputs.current_branch_tag}}.zip s3://public-files.orthanc.team/oe2-dist-files/ --cache-control max-age=1
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -110,6 +110,10 @@ jobs:
       with:
         name: web-app-dist
         path: WebApplication/dist
+
+    - name: install Mercurial on MacOS
+      if: runner.os == 'MacOS'
+      run: pip3 install mercurial
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build  ${{matrix.config.extraCMakeFlags}} -DPLUGIN_VERSION="${{needs.pre-build.outputs.current_branch_tag}}" -DSTATIC_BUILD=ON -DALLOW_DOWNLOADS=ON -DUSE_SYSTEM_ORTHANC_SDK=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}

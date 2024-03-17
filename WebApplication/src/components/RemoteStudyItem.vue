@@ -51,7 +51,11 @@ export default {
             // studies: state => state.studies.studies,
         }),        
         modalitiesInStudyForDisplay() {
-            return this.studyFields.ModalitiesInStudy.split('\\').join(',');
+            if (this.studyFields.ModalitiesInStudy) {
+                return this.studyFields.ModalitiesInStudy.split('\\').join(',');
+            } else {
+                return "?";
+            }
         },
     },
     components: { RemoteStudyDetails }
@@ -147,7 +151,7 @@ export default {
 }
 
 .study-row-expanded {
-    background-color: var(--study-selected-color);
+    background-color: var(--study-details-bg-color);
     font-weight: 700;
 
     border-top: 2px !important;
@@ -159,19 +163,8 @@ export default {
     border-bottom: 0px !important;
 }
 
-.study-table > tbody > tr:hover {
-    background-color: var(--study-hover-color);
-}
-
-.study-table > tbody > tr.study-row-expanded:hover {
-    background-color: var(--study-selected-color);
-}
-.study-table > tbody > tr.study-details-expanded:hover {
-    background-color: var(--study-selected-color);
-}
-
 .study-details-expanded {
-    background-color: var(--study-selected-color);
+    background-color: var(--study-details-bg-color);
 
     border-top: 0px !important;
     border-bottom: 2px !important;

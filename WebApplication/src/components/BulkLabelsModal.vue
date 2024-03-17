@@ -134,6 +134,12 @@ export default {
             uiOptions: state => state.configuration.uiOptions,
             allLabels: state => state.labels.allLabels
         }),
+        isAddButtonEnabled() {
+            return !this.addInProgress && this.labelsToAdd.length > 0;
+        },
+        isRemoveButtonEnabled() {
+            return !this.removeInProgress && this.labelsToRemove.length > 0;
+        }
     },
 };
 </script>
@@ -175,7 +181,7 @@ export default {
                             </div>
                             <div class="col-md-3">
                                 <button type="button" class="btn btn-primary w-100"
-                                    @click="addLabels()" :disabled="addInProgress">
+                                    @click="addLabels()" :disabled="!isAddButtonEnabled">
                                     <span>{{ $t('labels.add_button') }}</span>
                                     <span v-if="addInProgress" class="spinner-border spinner-border-sm alert-icon" role="status"
                                         aria-hidden="true"></span>
@@ -197,7 +203,7 @@ export default {
                             </div>
                             <div class="col-md-3">
                                 <button type="button" class="btn btn-primary w-100"
-                                    @click="removeLabels()" :disabled="removeInProgress">
+                                    @click="removeLabels()" :disabled="!isRemoveButtonEnabled">
                                     <span>{{ $t('labels.remove_button') }}</span>
                                     <span v-if="removeInProgress" class="spinner-border spinner-border-sm alert-icon" role="status"
                                         aria-hidden="true"></span>
@@ -208,7 +214,7 @@ export default {
                             <div class="col-md-12">
                                 <p v-for="message in messages" :key="message">
                                     <span v-html="message.part1"></span> 
-                                    <span v-for="label in message.labels" :key="label" class="label badge bg-info">{{ label }}</span>
+                                    <span v-for="label in message.labels" :key="label" class="label badge">{{ label }}</span>
                                     <span v-html="message.part2"></span>
                                 </p>
                             </div>
@@ -226,8 +232,4 @@ export default {
 </template>
 
 <style>
-.label {
-    margin-left: 2px;
-    margin-left: 2px;
-}
 </style>

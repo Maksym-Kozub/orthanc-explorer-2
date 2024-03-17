@@ -143,7 +143,7 @@ export default {
         <tr v-show="showLabels">
             <td></td>
             <td colspan="100%" class="label-row">
-                <span v-for="label in fields.Labels" :key="label" class="label badge bg-info">{{ label }}</span>
+                <span v-for="label in fields.Labels" :key="label" class="label badge">{{ label }}</span>
                 <span v-if="!hasLabels">&nbsp;</span>
             </td>
         </tr>
@@ -165,7 +165,7 @@ export default {
 }
 
 .study-row-expanded {
-    background-color: var(--study-selected-color);
+    background-color: var(--study-details-bg-color);
     font-weight: 700;
 
     border-top: 3px !important;
@@ -181,20 +181,19 @@ export default {
     border-bottom: 0px !important;
 }
 
-.study-table>tbody>tr:hover {
-    background-color: var(--study-hover-color);
-}
 
 .study-table>tbody>tr.study-row-expanded:hover {
-    background-color: var(--study-selected-color);
+    background-color: var(--study-details-bg-color);
+    color: red;
 }
 
 .study-table>tbody>tr.study-details-expanded:hover {
-    background-color: var(--study-selected-color);
+    background-color: var(--study-details-bg-color);
+    color: red;
 }
 
 .study-details-expanded {
-    background-color: var(--study-selected-color);
+    background-color: var(--study-details-bg-color);
 
     border-top: 0px !important;
     border-bottom: 3px !important;

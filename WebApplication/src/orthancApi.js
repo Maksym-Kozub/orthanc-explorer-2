@@ -272,6 +272,7 @@ export default {
             "Remove": removeTags,
             "Keep": keepTags,
             "KeepSource": keepSource,
+            "KeepLabels": true,
             "Force": true,
             "Synchronous": false
         }))
@@ -409,6 +410,10 @@ export default {
             return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'viewer?hangingprotocolId=mprAnd3DVolumeViewport&url=../studies/' + resourceOrthancId + "/ohif-dicom-json";
         } else if (mode == 'tmtv') {
             return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'tmtv?url=../studies/' + resourceOrthancId + "/ohif-dicom-json";
+        } else if (mode == 'seg') {
+            return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'segmentation?url=../studies/' + resourceOrthancId + "/ohif-dicom-json";
+        } else if (mode == 'microscopy') {
+            return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'microscopy?url=../studies/' + resourceOrthancId + "/ohif-dicom-json";
         }
     },
     getOhifViewerUrlForDicomWeb(mode, resourceDicomUid) {
@@ -419,6 +424,10 @@ export default {
                 return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'viewer?hangingprotocolId=mprAnd3DVolumeViewport&StudyInstanceUIDs=' + resourceDicomUid;
             } else if (mode == 'tmtv') {
                 return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'tmtv?StudyInstanceUIDs=' + resourceDicomUid;
+            } else if (mode == 'seg') {
+                return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'segmentation?StudyInstanceUIDs=' + resourceDicomUid;
+            } else if (mode == 'microscopy') {
+                return store.state.configuration.uiOptions.OhifViewer3PublicRoot + 'microscopy?StudyInstanceUIDs=' + resourceDicomUid;
             }
         } else {
             return store.state.configuration.uiOptions.OhifViewerPublicRoot + 'Viewer/' + resourceDicomUid;
@@ -433,6 +442,9 @@ export default {
     },
     getInstancePreviewUrl(orthancId) {
         return orthancApiUrl + "instances/" + orthancId + "/preview";
+    },
+    getInstancePdfUrl(orthancId) {
+        return orthancApiUrl + "instances/" + orthancId + "/pdf";
     },
     getInstanceDownloadUrl(orthancId) {
         return orthancApiUrl + "instances/" + orthancId + "/file";

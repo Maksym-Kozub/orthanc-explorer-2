@@ -28,9 +28,17 @@ export default {
             statistics: state => state.studies.statistics,
             labelsFilter: state => state.studies.labelsFilter,
             jobs: state => state.jobs.jobsIds,
-            allLabels: state => state.labels.allLabels
+            allLabels: state => state.labels.allLabels,
+            hasCustomLogo: state => state.configuration.hasCustomLogo,
+            configuration: state => state.configuration,
         }),
-
+        customLogoUrl() {
+            if (this.hasCustomLogo && this.configuration.customLogoUrl) {
+                return this.customLogoUrl;
+            } else {
+                return "./customizable/custom-logo";
+            }
+        },
         hasQueryableDicomWebServers() {
             return false; // TODO this.queryableDicomWebServers.length > 0;
         },
@@ -54,7 +62,7 @@ export default {
         },
         orthancApiUrl() {
             return orthancApiUrl;
-        }
+        },
     },
     methods: {
         selectModality(modality) {
@@ -119,8 +127,17 @@ export default {
 </script>
 <template>
     <div class="nav-side-menu">
-        <div>
-            <img class="orthanc-logo" src="..//assets/images/orthanc.png" height="48" />
+        <div v-if="!hasCustomLogo">
+            <img class="orthanc-logo" src="../assets/images/orthanc.png"/>
+        </div>
+        <div v-if="hasCustomLogo">
+            <img class="custom-logo" :src="customLogoUrl" />
+        </div>
+        <div v-if="hasCustomLogo">
+            <p class="powered-by-orthanc">
+            powered by
+            <img src="../assets/images/orthanc.png" />
+            </p>
         </div>
         <div v-if="uiOptions.ShowOrthancName" class="orthanc-name">
             <p>{{ system.Name }}</p>
@@ -255,6 +272,19 @@ export default {
 
 .orthanc-logo {
     filter: brightness(50);
+    height: 48px;
+}
+
+.powered-by-orthanc > img {
+    filter: brightness(50);
+    max-width: 50%;
+    height: auto;
+}
+
+.custom-logo {
+    padding: 4px;
+    max-width: 90%;
+    height: auto;
 }
 
 .nav-side-menu {
@@ -295,8 +325,8 @@ export default {
 
 .nav-side-menu ul .active,
 .nav-side-menu li .active {
-    border-left: 3px solid #d19b3d;
-    background-color: #4f5b69;
+    border-left: 3px solid var(--nav-side-active-border-color);
+    background-color: var(--nav-side-selected-bg-color);
 }
 
 .nav-side-menu ul .sub-menu li.active,
@@ -313,17 +343,17 @@ export default {
 .nav-side-menu ul .sub-menu li,
 .nav-side-menu li .sub-menu li {
     display: flex;
-    background-color: #181c20;
+    background-color: var(--nav-side-sub-bg-color);
     border: none;
     line-height: 28px;
-    border-bottom: 1px solid #23282e;
+    border-bottom: 1px solid var(--nav-side-bg-color);
     margin-left: 0px;
 }
 
 .nav-side-menu ul .sub-menu li:hover,
 .nav-side-menu li .sub-menu li:hover {
-    border-left: 3px solid #d19b3d;
-    background-color: #4f5b69;
+    border-left: 3px solid var(--nav-side-active-border-color);
+    background-color: var(--nav-side-selected-bg-color);
 }
 
 .nav-side-menu ul .sub-menu li:before,
@@ -340,8 +370,8 @@ export default {
 .nav-side-menu li {
     margin-left: -10px;
     padding-left: 0px;
-    border-left: 3px solid #2e353d;
-    border-bottom: 1px solid #23282e;
+    border-left: 3px solid var(--nav-side-bg-color);
+    border-bottom: 1px solid var(--nav-side-bg-color);
 }
 
 .nav-side-menu li a {
@@ -356,8 +386,8 @@ export default {
 }
 
 .nav-side-menu li:hover {
-    border-left: 3px solid #d19b3d;
-    background-color: #4f5b69;
+    border-left: 3px solid var(--nav-side-active-border-color);
+    background-color: var(--nav-side-selected-bg-color);
 }
 
 .nav-side-menu .menu-list .menu-content {

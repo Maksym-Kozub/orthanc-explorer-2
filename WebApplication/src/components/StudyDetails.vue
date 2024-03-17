@@ -36,11 +36,11 @@ export default {
         selectedValues() {
             return this.labelsModel.join(",");
         },
-        sampePatientStudiesLink() {
+        samePatientStudiesLink() {
             let filters = [];
             for (let tag of this.uiOptions.ShowSamePatientStudiesFilter) {
                 if (tag in this.patientMainDicomTags) {
-                    if (tag in ["PatientBirthDate"]) {
+                    if (["PatientBirthDate"].indexOf(tag) >= 0) {
                         filters.push(tag + "=" + this.patientMainDicomTags[tag] + "");
                     } else {
                         filters.push(tag + "=\"" + this.patientMainDicomTags[tag] + "\"");
@@ -98,7 +98,7 @@ export default {
         <tr v-if="!uiOptions.EnableEditLabels">
             <td colspan="100%">
                 {{  $t('labels.study_details_title') }}
-                <span v-for="label in labelsModel" :key="label" class="label badge bg-info">{{ label }}</span>
+                <span v-for="label in labelsModel" :key="label" class="label badge">{{ label }}</span>
             </td>
         </tr>
         <tr>
@@ -115,7 +115,7 @@ export default {
                 </ul>
                 <p v-if="hasLoadedSamePatientsStudiesCount && samePatientStudiesCount > 1">
                     {{ $t('this_patient_has_other_studies', { count: samePatientStudiesCount }) }}.
-                    <router-link v-bind:to='sampePatientStudiesLink' >
+                    <router-link v-bind:to='samePatientStudiesLink' >
                         {{ $t('this_patient_has_other_studies_show') }}
                     </router-link>
                 </p>
@@ -139,20 +139,6 @@ export default {
     </table>
 </template>
 
-<style scoped>
-.study-details-table {
-    margin-top: var(--details-top-margin);
-    margin-left: 5%;
-    width: 95% !important;
-    background-color: var(--study-selected-color);
-    font-size: 0.9rem;
-}
-
-.study-details-table td {
-    vertical-align: top;
-}
-
-</style>
 <style>
 .study-button-group i {
     font-size: 1.4rem;

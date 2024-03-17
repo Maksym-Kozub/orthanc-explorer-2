@@ -1,8 +1,8 @@
 # Orthanc - A Lightweight, RESTful DICOM Store
 # Copyright (C) 2012-2016 Sebastien Jodogne, Medical Physics
 # Department, University Hospital of Liege, Belgium
-# Copyright (C) 2017-2023 Osimis S.A., Belgium
-# Copyright (C) 2021-2023 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
+# Copyright (C) 2017-2024 Osimis S.A., Belgium
+# Copyright (C) 2021-2024 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public License
@@ -158,6 +158,8 @@ if (ORTHANC_FRAMEWORK_SOURCE STREQUAL "hg" OR
         set(ORTHANC_FRAMEWORK_MD5 "d32a0cde03b6eb603d8dd2b33d38bf1b")
       elseif (ORTHANC_FRAMEWORK_VERSION STREQUAL "1.12.1")
         set(ORTHANC_FRAMEWORK_MD5 "8a435140efc8ff4a01d8242f092f21de")
+      elseif (ORTHANC_FRAMEWORK_VERSION STREQUAL "1.12.2")
+        set(ORTHANC_FRAMEWORK_MD5 "d2476b9e796e339ac320b5333489bdb3")
 
       # Below this point are development snapshots that were used to
       # release some plugin, before an official release of the Orthanc

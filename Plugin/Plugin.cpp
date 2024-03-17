@@ -2,8 +2,9 @@
  * Orthanc - A Lightweight, RESTful DICOM Store
  * Copyright (C) 2012-2016 Sebastien Jodogne, Medical Physics
  * Department, University Hospital of Liege, Belgium
- * Copyright (C) 2017-2022 Osimis S.A., Belgium
- * Copyright (C) 2021-2022 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
+ * Copyright (C) 2017-2024 Osimis S.A., Belgium
+ * Copyright (C) 2021-2024 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
+ * Copyright (C) 2024-2024 Orthanc Team SRL, Belgium
  *
  * This program is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License
@@ -42,6 +43,10 @@ Json::Value pluginsConfiguration_;
 bool hasUserProfile_ = false;
 bool openInOhifV3IsExplicitelyDisabled = false;
 bool enableShares_ = false;
+std::string customCssPath_;
+std::string theme_ = "light";
+std::string customLogoPath_;
+std::string customLogoUrl_;
 
 
 template <enum Orthanc::EmbeddedResources::DirectoryResourceId folder>
@@ -85,10 +90,96 @@ void ServeEmbeddedFile(OrthancPluginRestOutput* output,
     std::string s;
     Orthanc::EmbeddedResources::GetFileResource(s, file);
 
+    if (file == Orthanc::EmbeddedResources::WEB_APPLICATION_INDEX && theme_ != "light")
+    {
+      boost::replace_all(s, "data-bs-theme=\"light\"", "data-bs-theme=\"" + theme_ + "\"");
+    }
+
     const char* resource = s.size() ? s.c_str() : NULL;
     OrthancPluginAnswerBuffer(context, output, resource, s.size(), Orthanc::EnumerationToString(mime));
   }
 }
+
+void ServeCustomLogo(OrthancPluginRestOutput* output,
+                     const char* url,
+                     const OrthancPluginHttpRequest* request)
+{
+  OrthancPluginContext* context = OrthancPlugins::GetGlobalContext();
+
+  if (request->method != OrthancPluginHttpMethod_Get)
+  {
+    OrthancPluginSendMethodNotAllowed(context, output, "GET");
+  }
+  else
+  {
+    std::string logoFileContent;
+
+    std::string customCssFileContent;
+    Orthanc::SystemToolbox::ReadFile(logoFileContent, customLogoPath_);
+    Orthanc::MimeType mimeType = Orthanc::SystemToolbox::AutodetectMimeType(customLogoPath_);
+
+    // include an ETag for correct cache handling
+    OrthancPlugins::OrthancString md5;
+    size_t size = logoFileContent.size();
+    md5.Assign(OrthancPluginComputeMd5(OrthancPlugins::GetGlobalContext(), logoFileContent.c_str(), size));
+
+    std::string etag = "\"" + std::string(md5.GetContent()) + "\"";
+    OrthancPluginSetHttpHeader(OrthancPlugins::GetGlobalContext(), output, "ETag", etag.c_str());
+    OrthancPluginSetHttpHeader(OrthancPlugins::GetGlobalContext(), output, "Cache-Control", "no-cache");
+
+    OrthancPluginAnswerBuffer(context, output, logoFileContent.c_str(), size, Orthanc::EnumerationToString(mimeType));
+  }
+}
+
+// serves either the default CSS or a custom file CSS
+void ServeCustomCss(OrthancPluginRestOutput* output,
+                    const char* url,
+                    const OrthancPluginHttpRequest* request)
+{
+  OrthancPluginContext* context = OrthancPlugins::GetGlobalContext();
+
+  if (request->method != OrthancPluginHttpMethod_Get)
+  {
+    OrthancPluginSendMethodNotAllowed(context, output, "GET");
+  }
+  else
+  {
+    std::string cssFileContent;
+
+    if (strstr(url, "custom.css") != NULL)
+    {
+      if (theme_ == "dark")
+      {
+        Orthanc::EmbeddedResources::GetFileResource(cssFileContent, Orthanc::EmbeddedResources::DEFAULT_CSS_DARK);
+      }
+      else
+      {
+        Orthanc::EmbeddedResources::GetFileResource(cssFileContent, Orthanc::EmbeddedResources::DEFAULT_CSS_LIGHT);
+      }
+
+      if (!customCssPath_.empty())
+      { // append the custom CSS
+        std::string customCssFileContent;
+        Orthanc::SystemToolbox::ReadFile(customCssFileContent, customCssPath_);
+        cssFileContent += "\n/* Appending the custom CSS */\n" + customCssFileContent;
+      }
+    }
+
+    const char* resource = cssFileContent.size() ? cssFileContent.c_str() : NULL;
+    size_t size = cssFileContent.size();
+
+    // include an ETag for correct cache handling
+    OrthancPlugins::OrthancString md5;
+    md5.Assign(OrthancPluginComputeMd5(OrthancPlugins::GetGlobalContext(), resource, size));
+
+    std::string etag = "\"" + std::string(md5.GetContent()) + "\"";
+    OrthancPluginSetHttpHeader(OrthancPlugins::GetGlobalContext(), output, "ETag", etag.c_str());
+    OrthancPluginSetHttpHeader(OrthancPlugins::GetGlobalContext(), output, "Cache-Control", "no-cache");
+
+    OrthancPluginAnswerBuffer(context, output, resource, size, Orthanc::EnumerationToString(Orthanc::MimeType_Css));
+  }
+}
+
 
 void RedirectRoot(OrthancPluginRestOutput* output,
                   const char* url,
@@ -180,6 +271,36 @@ void ReadConfiguration()
     }
 
     MergeJson(pluginJsonConfiguration_, jsonConfig);
+
+    if (jsonConfig.isMember("CustomCssPath") && jsonConfig["CustomCssPath"].isString())
+    {
+      customCssPath_ = jsonConfig["CustomCssPath"].asString();
+      if (!Orthanc::SystemToolbox::IsExistingFile(customCssPath_))
+      {
+        LOG(ERROR) << "Unable to accesss the 'CustomCssPath': " << customCssPath_;
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_InexistentFile);
+      }
+    }
+
+    if (jsonConfig.isMember("CustomLogoPath") && jsonConfig["CustomLogoPath"].isString())
+    {
+      customLogoPath_ = jsonConfig["CustomLogoPath"].asString();
+      if (!Orthanc::SystemToolbox::IsExistingFile(customLogoPath_))
+      {
+        LOG(ERROR) << "Unable to accesss the 'CustomLogoPath': " << customLogoPath_;
+        throw Orthanc::OrthancException(Orthanc::ErrorCode_InexistentFile);
+      }
+    }
+
+    if (jsonConfig.isMember("CustomLogoUrl") && jsonConfig["CustomLogoUrl"].isString())
+    {
+      customLogoUrl_ = jsonConfig["CustomLogoUrl"].asString();
+    }
+
+    if (jsonConfig.isMember("Theme") && jsonConfig["Theme"].isString() && jsonConfig["Theme"].asString() == "dark")
+    {
+      theme_ = "dark";
+    }
   }
 
   enableShares_ = pluginJsonConfiguration_["UiOptions"]["EnableShares"].asBool(); // we are sure that the value exists since it is in the default configuration file
@@ -452,7 +573,13 @@ void GetOE2Configuration(OrthancPluginRestOutput* output,
     tokens["RequiredForLinks"] = hasUserProfile_;
 
     oe2Configuration["Tokens"] = tokens;
-    
+
+    oe2Configuration["HasCustomLogo"] = !customLogoPath_.empty() || !customLogoUrl_.empty();
+    if (!customLogoUrl_.empty())
+    {
+      oe2Configuration["CustomLogoUrl"] = customLogoUrl_;
+    }
+
     if (hasUserProfile_)
     {
       // get the user profile from the auth plugin
@@ -599,6 +726,18 @@ extern "C"
         CheckRootUrlIsValid(oe2BaseUrl_, "Root", false);
 
         OrthancPlugins::LogWarning("Root URI to the Orthanc-Explorer 2 application: " + oe2BaseUrl_);
+
+
+        OrthancPlugins::RegisterRestCallback
+          <ServeCustomCss>
+          (oe2BaseUrl_ + "app/customizable/custom.css", true);
+
+        if (!customLogoPath_.empty())
+        {
+          OrthancPlugins::RegisterRestCallback
+            <ServeCustomLogo>
+            (oe2BaseUrl_ + "app/customizable/custom-logo", true);
+        }
 
         // we need to mix the "routing" between the server and the frontend (vue-router)
         // first part are the files that are 'static files' that must be served by the backend

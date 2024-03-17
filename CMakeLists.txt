@@ -1,8 +1,9 @@
 # Orthanc - A Lightweight, RESTful DICOM Store
 # Copyright (C) 2012-2016 Sebastien Jodogne, Medical Physics
 # Department, University Hospital of Liege, Belgium
-# Copyright (C) 2017-2022 Osimis S.A., Belgium
-# Copyright (C) 2021-2022 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
+# Copyright (C) 2017-2024 Osimis S.A., Belgium
+# Copyright (C) 2021-2024 Sebastien Jodogne, ICTEAM UCLouvain, Belgium
+# Copyright (C) 2024-2024 Orthanc Team SRL, Belgium
 #
 # This program is free software: you can redistribute it and/or
 # modify it under the terms of the GNU Affero General Public License
@@ -30,12 +31,12 @@ project(OrthancExplorer2)
 set(PLUGIN_VERSION "mainline" CACHE STRING "plugin version 'mainline' or '1.2.3'")
 
 if (PLUGIN_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)$")
-  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "daf4807631c5")  # todo: switch back to 1.12.2 - web once available
+  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "1.12.2")
   set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "web")
   set(ORTHANC_OE2_VERSION ${PLUGIN_VERSION})
 else()
-  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "daf4807631c5")
-  set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "web")
+  set(ORTHANC_FRAMEWORK_DEFAULT_VERSION "mainline")
+  set(ORTHANC_FRAMEWORK_DEFAULT_SOURCE "hg")
   set(ORTHANC_OE2_VERSION "mainline")
 endif()
 
@@ -149,7 +150,7 @@ if (${WEBAPP_DIST_SOURCE} STREQUAL "WEB")
   if (${WEBAPP_DIST_VERSION} STREQUAL "mainline")
     set(WEBAPP_DIST_VERSION "master")  # the branch is named master, not mainline
   endif()
-  DownloadPackage(no-check "https://orthanc.osimis.io/public/oe2/web-app-dist/${WEBAPP_DIST_VERSION}.zip" ${WEBAPP_DIST_PATH})
+  DownloadPackage(no-check "https://public-files.orthanc.team/oe2-dist-files/${WEBAPP_DIST_VERSION}.zip" ${WEBAPP_DIST_PATH})
 endif()
 
 if (STANDALONE_BUILD)
@@ -161,6 +162,8 @@ if (STANDALONE_BUILD)
     WEB_APPLICATION_INDEX   ${WEBAPP_DIST_PATH}/index.html
     WEB_APPLICATION_INDEX_LANDING   ${WEBAPP_DIST_PATH}/token-landing.html
     WEB_APPLICATION_INDEX_RETRIEVE_AND_VIEW   ${WEBAPP_DIST_PATH}/retrieve-and-view.html
+    DEFAULT_CSS_LIGHT   ${CMAKE_SOURCE_DIR}/WebApplication/src/assets/css/defaults-light.css
+    DEFAULT_CSS_DARK   ${CMAKE_SOURCE_DIR}/WebApplication/src/assets/css/defaults-dark.css
     )
 else()
   add_definitions(-DORTHANC_STANDALONE=0)

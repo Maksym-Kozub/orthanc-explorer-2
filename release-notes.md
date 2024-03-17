@@ -1,5 +1,45 @@
-Pending changes
-===============
+Changes:
+- Theming the interface:
+  - New configurations:
+    -  "Theme" to select the default "light" or "dark" theme.
+    -  "CustomCssPath" to complement the default CSS by a custom one.
+    -  "CustomLogoPath" to provide your own custom logo from disk.
+    -  "CustomLogoUrl" to provide your own custom logo from an external url.
+- OHIF Integration:
+  - Added support for `Segmentation` and `Microscopy` modes.  The `Microscopy`
+    mode is disabled by default since it is not stable yet.
+  - You can now enable/disable OHIF viewer modes by including/removing them
+    from the `ViewersIcons` configuration.
+- Configurations:
+  - Updated default values for `ViewersIcons` and `ViewersOrdering`.
+
+1.2.2 (2024-02-16)
+==================
+
+Changes:
+- Now keeping labels when modifying a study or a series.  
+  This fix requires Orthanc 1.12.3.
+- Added Slovenian translations
+- Now showing the DICOM header content at instance level (TransferSyntax, ...)
+- Instance preview now handles PDF correctly.
+- Now displaying #Patients and MaximumPatientCount in Settings.
+
+
+Fixes:
+- fixed delete on multiple selection in Firefox
+
+
+1.2.1 (2024-01-03)
+==================
+
+Fixes:
+- Handle quotes correctly when "PatientBirthDate" is defined in "ShowSamePatientStudiesFilter"
+- fix #42: Studies disappear from list when unselecting them.
+- fix #34: Enable copy button when context is not secure.
+
+
+1.2.0 (2023-12-19)
+==================
 
 Changes:
 - Added a button to download multiple studies at once (only available if running an
@@ -15,6 +55,10 @@ Changes:
   default option is selected.
 - In "Modify Patient Tags", allow applying changes even if nothing has changed e.g. to apply all current
   Patient tags to all studies with the same Patient ID.
+
+Fixes:
+- fix #43: Missing 'ModalitiesInStudy' in response in remote system QR breaks search result preview.
+
 
 1.1.3 (2023-10-04)
 ==================

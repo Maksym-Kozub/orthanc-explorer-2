@@ -104,6 +104,13 @@ export default {
             }
             return this.studiesIds.length == this.uiOptions.MaxStudiesDisplayed; // in this case, the result has been limited
         },
+        isDarkMode() {
+            // hack to switch the theme: get the value from our custom css
+            let bootstrapTheme = document.documentElement.getAttribute("data-bs-theme"); // for production
+            bootstrapTheme = getComputedStyle(document.documentElement).getPropertyValue('--bootstrap-theme');  // for dev
+            console.log("DatePicker color mode is ", bootstrapTheme);
+            return bootstrapTheme == "dark";
+        },
         isSearchAsYouTypeEnabled() {
             return this.uiOptions.StudyListSearchMode == "search-as-you-type";
         },
@@ -663,15 +670,15 @@ export default {
 <template>
     <div>
         <table class="table table-responsive table-sm study-table table-borderless">
-            <thead>
-                <th width="2%" scope="col" class="study-table-header"></th>
+            <thead class="study-table-header">
+                <th width="2%" scope="col" ></th>
                 <th v-for="columnTag in uiOptions.StudyListColumns" :key="columnTag" data-bs-toggle="tooltip"
                     v-bind:title="columnTooltip(columnTag)" v-bind:width="columnWidth(columnTag)"
                     class="study-table-title">{{
                         columnTitle(columnTag)
                     }}</th>
             </thead>
-            <thead class="study-filters" v-on:keyup.enter="search">
+            <thead class="study-table-filters" v-on:keyup.enter="search">
                 <th scope="col">
                     <button @click="clearFilters" type="button" class="form-control study-list-filter btn filter-button"
                         data-bs-toggle="tooltip" title="Clear filter">
@@ -679,15 +686,15 @@ export default {
                     </button>
                 </th>
                 <th v-for="columnTag in uiOptions.StudyListColumns" :key="columnTag">
-                    <div v-if="columnTag == 'StudyDate'" class="study-list-date-picker">
+                    <div v-if="columnTag == 'StudyDate'">
                     <Datepicker v-if="columnTag == 'StudyDate'" v-model="filterStudyDateForDatePicker"
                         :enable-time-picker="false" range :preset-ranges="datePickerPresetRanges" format="yyyyMMdd"
-                        preview-format="yyyyMMdd" text-input arrow-navigation :highlight-week-days="[0, 6]">
+                        preview-format="yyyyMMdd" text-input arrow-navigation :highlight-week-days="[0, 6]" :dark="isDarkMode">
                         <template #yearly="{ label, range, presetDateRange }">
                             <span @click="presetDateRange(range)">{{ label }}</span>
                         </template>
                     </Datepicker>
-                </div>
+                    </div>
                     <div v-else-if="columnTag == 'modalities'" class="dropdown">
                         <button type="button" class="btn btn-default btn-sm filter-button dropdown-toggle"
                             data-bs-toggle="dropdown" id="dropdown-modalities-button" aria-expanded="false"><span
@@ -711,10 +718,10 @@ export default {
                                     data-bs-toggle="dropdown">{{ $t('close') }}</button></li>
                         </ul>
                     </div>
-                    <div v-else-if="columnTag == 'PatientBirthDate'" class="study-list-date-picker">
+                    <div v-else-if="columnTag == 'PatientBirthDate'">
                     <Datepicker v-model="filterPatientBirthDateForDatePicker"
                         :enable-time-picker="false" range format="yyyyMMdd" preview-format="yyyyMMdd" text-input
-                        arrow-navigation :highlight-week-days="[0, 6]">
+                        arrow-navigation :highlight-week-days="[0, 6]" :dark="isDarkMode">
                     </Datepicker>
                     </div>
                     <input v-else-if="hasFilter(columnTag)" type="text" class="form-control study-list-filter"
@@ -722,21 +729,21 @@ export default {
                         v-bind:class="getFilterClass(columnTag)" />
                 </th>
             </thead>
-            <tbody>
-                <tr class="actions-header">
-                    <td width="2%" scope="col">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" v-model="allSelected"
-                                :indeterminate="isPartialSelected" @click="clickSelectAll">
-                        </div>
-                    </td>
-                    <td width="98%" colspan="10" scope="col" class="study-table-header">
+            <thead class="study-table-actions">
+                <th width="2%" scope="col">
+                    <div class="form-check" style="margin-left: 1.9rem">
+                        <input class="form-check-input" type="checkbox" v-model="allSelected"
+                            :indeterminate="isPartialSelected" @click="clickSelectAll">
+                    </div>
+                </th>
+                <th width="98%" colspan="10" scope="col">
+                    <div class="container">
                         <div class="row g-1">
-                            <div class="col-3 study-list-bulk-buttons">
+                            <div class="col-4 study-list-bulk-buttons">
                                 <ResourceButtonGroup :resourceLevel="'bulk'">
                                 </ResourceButtonGroup>
                             </div>
-                            <div class="col-7">
+                            <div class="col-6">
                                 <div v-if="!isSearching && isLoadingLatestStudies" class="alert alert-secondary study-list-alert" role="alert">
                                     <span v-if="isLoadingLatestStudies" class="spinner-border spinner-border-sm alert-icon" role="status"
                                         aria-hidden="true"></span>{{
@@ -776,9 +783,9 @@ export default {
                                 </button>
                             </div>
                         </div>
-                    </td>
-                </tr>
-            </tbody>
+                    </div>
+                </th>
+            </thead>
             <StudyItem v-for="studyId in studiesIds" :key="studyId" :studyId="studyId"
                 @deletedStudy="onDeletedStudy">
             </StudyItem>
@@ -793,113 +800,6 @@ export default {
     --filter-padding: 2px;
 }
 
-input.form-control.study-list-filter {
-    color: black;
-    margin-top: var(--filter-margin);
-    margin-bottom: var(--filter-margin);
-    padding-top: var(--filter-padding);
-    padding-bottom: var(--filter-padding);
-    border-bottom-width: thin;
-}
+/* styles are in common.css because they are shared between the StudyList and the RemoteStudyList */
 
-.filter-button {
-    border-bottom-width: thin !important;
-}
-
-.search-button {
-    padding-left: 0px !important;
-}
-
-.is-not-searching {
-    background-color: #0d6dfd86 !important;
-    border-color: #0d6dfd86 !important;
-}
-
-.is-searching {
-    background-color: #fda90d86 !important;
-    border-color: #fda90d86 !important;
-}
-
-input.form-control.study-list-filter:not(:placeholder-shown) {
-    background-color: white;
-}
-
-input.form-control.study-list-filter::placeholder {
-    color: rgb(200, 200, 200);
-}
-
-button.form-control.study-list-filter {
-    color: black;
-    margin-top: var(--filter-margin);
-    margin-bottom: var(--filter-margin);
-    padding-top: var(--filter-padding);
-    padding-bottom: var(--filter-padding);
-}
-
-.study-table-header {
-    text-align: left;
-    padding-left: 10px;
-}
-
-.study-table-title {
-    text-align: left;
-    padding-left: 4px;
-    padding-right: 4px;
-    vertical-align: middle;
-    line-height: 1.2rem;
-}
-
-/* .study-table> :not(:first-child) {
-    border-top: 0px !important;
-} */
-
-.study-table> :nth-child(odd) {
-    background-color: var(--study-odd-color)
-}
-
-.study-table> :last-child {
-    border-bottom-width: thin;
-}
-
-.study-filters th {
-    text-align: left;
-    background-color: rgb(240, 240, 240);
-    padding-left: 10px !important;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    margin-bottom: 5px;
-    vertical-align: middle;    
-}
-
-.study-table td {
-    text-align: left;
-    padding-left: 10px;
-}
-
-.study-list-alert {
-    margin-top: var(--filter-margin);
-    margin-bottom: var(--filter-margin);
-    padding-top: var(--filter-padding);
-    padding-bottom: var(--filter-padding);
-}
-
-.study-list-bulk-buttons {
-    margin-top: var(--filter-margin);
-}
-
-.is-invalid-filter {
-    /* background-color: #f7dddf !important; */
-    border-color: red !important;
-    box-shadow: 0 0 0 .25rem rgba(255, 0, 0, .25) !important;
-}
-
-.alert-icon {
-    margin-right: 0.7rem;
-}
-
-.actions-header {
-    background-color: rgb(240, 240, 240);
-    text-align: left;
-    vertical-align: middle;
-    padding-left: 10px;
-}</style>
+</style>
